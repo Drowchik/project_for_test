@@ -1,6 +1,7 @@
 from datetime import timedelta
 from datetime import datetime
-from fastapi import Depends, HTTPException, Response
+from fastapi import Depends, HTTPException, Request, Response
+from jose import jwt, JWTError
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
@@ -68,3 +69,28 @@ class UserService:
             raise HTTPException(status_code=400, detail="Email not registered")
         access_token = cls.create_access_token({"sub": str(existing_user.id)})
         response.set_cookie("access_token_blog", access_token, httponly=True)
+
+    @staticmethod
+    def get_token(request: Request):
+        token = request.cookies.get("access_token_blog")
+        if not token:
+            raise HTTPException(status_code=401)
+        return token
+
+    @staticmethod
+    async def get_current_user(token: str = Depends(get_token), db: AsyncSession = Depends(get_db)):
+        try:
+            payload = jwt.decode(
+                token, settings.secret_key, settings.algorithm)
+        except JWTError:
+            raise HTTPException(status_code=401)
+        expire: str = payload.get("exp")
+        if (not expire) or (int(expire) < datetime.utcnow().timestamp()):
+            raise HTTPException(status_code=401)
+        user_id: str = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401)
+        user = await UserService.get_user_by_filter(db, id=int(user_id))
+        if not user:
+            raise HTTPException(status_code=401)
+        return user

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.app.resources.notes import router as router_notes
+from src.app.resources.notes_router import router as router_notes
 from src.app.resources.user_router import router as user_router
 
 
