@@ -4,3 +4,7 @@ database:
   host: localhost
   port: 5432
   db: notes
+
+jwt:
+  algorithm: HS256 
+  secret_key: 8zS7ksglywomSBHtEs2G94tiNf6UkhPIEqvjC71tlUA=
