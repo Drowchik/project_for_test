@@ -1,5 +1,6 @@
 from datetime import datetime
 from fastapi import HTTPException
+from src.app.services.spell import SpellChecker
 from src.app.schemas.shemas import SNotes
 from src.app.models import User
 from src.app.services.auth import UserService
@@ -19,22 +20,29 @@ class NotesService:
                           db: AsyncSession,
                           params: Params):
         try:
-            paginated_result = await paginate(db, select(Note).filter(Note.user_id == user.id).options(selectinload(Note.category)), params)
+            paginated_result = await paginate(db, select(Note).filter(Note.user_id == user.id), params)
         except Exception as e:
             raise HTTPException(status_code=401, detail=f"Erorr:  {e}")
         response = []
-        for post in paginated_result.items:
+        for note in paginated_result.items:
             response.append(SNotes(
-                title=post.title,
-                description=post.description,
-                username=post.user.name,
-                category_name=post.category.name
+                title=note.title,
+                description=note.description,
+                created_at=note.created_at,
             ))
         return LimitOffsetPage.create(items=response, total=paginated_result.total, params=params)
 
     @staticmethod
     async def add_note(note: SNotes,  user: User, db: AsyncSession):
         try:
+            spell_checker = SpellChecker()
+            title_check = spell_checker.validate_text(note.title)
+
+            if title_check:
+                raise ValueError(f"Ошибки в заголовке: {title_check}")
+            description_check = spell_checker.validate_text(note.description)
+            if description_check:
+                raise ValueError(f"Ошибки в описании: {description_check}")
             new_post = Note(title=note.title,
                             description=note.description, user_id=user.id)
             db.add(new_post)

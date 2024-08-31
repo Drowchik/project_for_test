@@ -1,10 +1,11 @@
 database:
   user: postgres
   password: postgres
-  host: localhost
+  host: db
   port: 5432
   db: notes
 
 jwt:
   algorithm: HS256 
   secret_key: 8zS7ksglywomSBHtEs2G94tiNf6UkhPIEqvjC71tlUA=
+

@@ -19,6 +19,8 @@ bcrypt = "3.2.0"
 pyjwt = "^2.9.0"
 python-jose = "^3.3.0"
 fastapi-pagination = "^0.12.26"
+requests = "^2.32.3"
+alembic = "^1.13.2"
 
 
 [build-system]

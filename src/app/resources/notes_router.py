@@ -15,7 +15,7 @@ router = APIRouter(prefix="/notes", tags=["Заметки"],)
 async def get_my_note(user: User = Depends(UserService.get_current_user),
                       db: AsyncSession = Depends(get_db),
                       params: Params = Depends()):
-    return NotesService.get_my_note(user, db, params)
+    return await NotesService.get_my_note(user, db, params)
 
 
 @router.post("")
